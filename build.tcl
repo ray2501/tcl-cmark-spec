@@ -11,7 +11,7 @@ set var [list git clone https://github.com/apnadkarni/tcl-cmark.git $base]
 exec >@stdout 2>@stderr {*}$var
 
 if {[file exists $base]} {
-    file delete -force tcl-cmark/.git
+    file delete -force $base/.git
 }
 
 set var2 [list tar czvf ${base}.tar.gz $base]
