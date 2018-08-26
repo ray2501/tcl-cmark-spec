@@ -9,6 +9,7 @@ Release:       0
 License:       BSD-3 License
 Group:         Development/Libraries/Tcl
 Source:        tcl-cmark-1.0.tar.gz
+Patch0:        version.patch
 URL:           https://github.com/apnadkarni/tcl-cmark
 BuildRequires: autoconf
 BuildRequires: make
@@ -23,6 +24,7 @@ CommonMark/Markdown library.
 
 %prep
 %setup -q -n %{name}-%{version}
+%patch0 
 
 %build
 ./configure \

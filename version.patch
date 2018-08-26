@@ -1,0 +1,124 @@
+diff --git configure configure
+index 2aee98e..1378798 100755
+--- configure
++++ configure
+@@ -713,7 +713,6 @@ infodir
+ docdir
+ oldincludedir
+ includedir
+-runstatedir
+ localstatedir
+ sharedstatedir
+ sysconfdir
+@@ -795,7 +794,6 @@ datadir='${datarootdir}'
+ sysconfdir='${prefix}/etc'
+ sharedstatedir='${prefix}/com'
+ localstatedir='${prefix}/var'
+-runstatedir='${localstatedir}/run'
+ includedir='${prefix}/include'
+ oldincludedir='/usr/include'
+ docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
+@@ -1048,15 +1046,6 @@ do
+   | -silent | --silent | --silen | --sile | --sil)
+     silent=yes ;;
+ 
+-  -runstatedir | --runstatedir | --runstatedi | --runstated \
+-  | --runstate | --runstat | --runsta | --runst | --runs \
+-  | --run | --ru | --r)
+-    ac_prev=runstatedir ;;
+-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+-  | --run=* | --ru=* | --r=*)
+-    runstatedir=$ac_optarg ;;
+-
+   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
+     ac_prev=sbindir ;;
+   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
+@@ -1194,7 +1183,7 @@ fi
+ for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
+ 		datadir sysconfdir sharedstatedir localstatedir includedir \
+ 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
+-		libdir localedir mandir runstatedir
++		libdir localedir mandir
+ do
+   eval ac_val=\$$ac_var
+   # Remove trailing slashes.
+@@ -1347,7 +1336,6 @@ Fine tuning of the installation directories:
+   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
+   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
+   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
+   --libdir=DIR            object code libraries [EPREFIX/lib]
+   --includedir=DIR        C header files [PREFIX/include]
+   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
+@@ -5352,10 +5340,10 @@ $as_echo_n "checking for cmark-gfm installation... " >&6; }
+ $as_echo "found" >&6; }
+         if test "${TEA_PLATFORM}" = "windows" ; then
+             CMARK_CFLAGS="`pkg-config --cflags libcmark-gfm`"
+-            CMARK_LIBS="-Wl,-Bstatic `pkg-config --static --libs libcmark-gfm` -lcmark-gfmextensions -Wl,-Bdynamic"
++            CMARK_LIBS="-Wl,-Bstatic `pkg-config --static --libs libcmark-gfm` -Wl,-Bdynamic"
+         else
+             CMARK_CFLAGS="`pkg-config --cflags libcmark-gfm`"
+-            CMARK_LIBS="`pkg-config --libs libcmark-gfm` -lcmark-gfmextensions"
++            CMARK_LIBS="`pkg-config --libs libcmark-gfm`"
+         fi
+     else
+         as_fn_error $? "The required lib libcmark-gfm not found" "$LINENO" 5
+diff --git generic/tclcmark.c generic/tclcmark.c
+index 8b88d1f..6ab461b 100644
+--- generic/tclcmark.c
++++ generic/tclcmark.c
+@@ -15,13 +15,23 @@
+ #include <string.h>
+ #include <limits.h>
+ #include "tcl.h"
++#include "cmark-gfm_version.h"
++#if CMARK_GFM_VERSION >= ((0 << 24) | (28 << 16) | (3 << 8) | 15)
++#include "cmark-gfm.h"
++#include "cmark-gfm-core-extensions.h"
++#else
+ #include "cmark.h"
+ #include "core-extensions.h"
++#endif
+ 
+ extern DLLEXPORT int Cmark_Init(Tcl_Interp * interp);
+ 
+ Tcl_Config tclcmark_config[] = {
++#if CMARK_GFM_VERSION >= ((0 << 24) | (28 << 16) | (3 << 8) | 15)
++    {"cmark,version", CMARK_GFM_VERSION_STRING},
++#else
+     {"cmark,version", CMARK_VERSION_STRING},
++#endif
+     {NULL, NULL}
+ };
+ 
+@@ -148,7 +158,12 @@ static int tclcmark_render_cmd(
+         return TCL_ERROR;
+     }
+ 
++
++#if CMARK_GFM_VERSION >= ((0 << 24) | (28 << 16) | (3 << 8) | 15)
++    cmark_gfm_core_extensions_ensure_registered();
++#else
+     core_extensions_ensure_registered();
++#endif
+     
+     for (arg_index = 1; arg_index < objc-1; ++arg_index) {
+ 	int opt_index;
+diff --git tclcmark.m4 tclcmark.m4
+index c0d3dcd..665a6dc 100644
+--- tclcmark.m4
++++ tclcmark.m4
+@@ -6,10 +6,10 @@ AC_DEFUN(TCLCMARK_LOCATE_CMARK, [
+         AC_MSG_RESULT([found])
+         if test "${TEA_PLATFORM}" = "windows" ; then
+             CMARK_CFLAGS="`pkg-config --cflags libcmark-gfm`"
+-            CMARK_LIBS="-Wl,-Bstatic `pkg-config --static --libs libcmark-gfm` -lcmark-gfmextensions -Wl,-Bdynamic"
++            CMARK_LIBS="-Wl,-Bstatic `pkg-config --static --libs libcmark-gfm` -Wl,-Bdynamic"
+         else
+             CMARK_CFLAGS="`pkg-config --cflags libcmark-gfm`"
+-            CMARK_LIBS="`pkg-config --libs libcmark-gfm` -lcmark-gfmextensions"
++            CMARK_LIBS="`pkg-config --libs libcmark-gfm`"
+         fi
+     else
+         AC_MSG_ERROR([The required lib libcmark-gfm not found])
