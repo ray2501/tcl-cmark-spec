@@ -105,6 +105,17 @@ index 8b88d1f..6ab461b 100644
      
      for (arg_index = 1; arg_index < objc-1; ++arg_index) {
  	int opt_index;
+@@ -189,7 +189,10 @@
+             cmark_opts |= CMARK_OPT_SMART;
+             break;
+         case TCL_CMARK_SAFE:
++           // 0.28.3.gfm.18 default is on and remove this option!!!
++           #if CMARK_GFM_VERSION <= ((0 << 24) | (28 << 16) | (3 << 8) | 17)
+             cmark_opts |= CMARK_OPT_SAFE;
++            #endif
+             break;
+         case TCL_CMARK_FOOTNOTES:
+             cmark_opts |= CMARK_OPT_FOOTNOTES;
 diff --git tclcmark.m4 tclcmark.m4
 index c0d3dcd..665a6dc 100644
 --- tclcmark.m4
