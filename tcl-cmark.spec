@@ -5,7 +5,7 @@
 Name:          tcl-cmark
 Summary:       Tcl bindings to the cmark-gfm CommonMark/Markdown library
 Version:       1.0
-Release:       0
+Release:       1
 License:       BSD-3 License
 Group:         Development/Libraries/Tcl
 Source:        tcl-cmark-1.0.tar.gz
